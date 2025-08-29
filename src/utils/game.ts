@@ -1,10 +1,9 @@
 import {
-  useGameStore,
   type HumanPlayer,
   type SquareValue,
 } from "@/store/store";
-const { history, currentMove, gameMode, isThinking } = useGameStore();
-const { setHistory, setCurrentMove } = useGameStore();
+// const { history, currentMove, gameMode, isThinking } = useGameStore();
+// const { setHistory, setCurrentMove } = useGameStore();
 
 type WinnerResult = {
   winner: HumanPlayer;
@@ -42,7 +41,9 @@ export function calculateTurns(squares: SquareValue[]): number {
 export function calculateStatus(
   winner: SquareValue,
   turns: number,
-  player: HumanPlayer
+  player: HumanPlayer,
+  isThinking: boolean,
+  gameMode: string
 ) {
   if (!winner && !turns) return "It's a Draw!";
   if (winner) return `Winner: ${winner}`;
@@ -54,7 +55,13 @@ export function calculateStatus(
   return `Next player: ${player}`;
 }
 
-export function handlePlay(nextSquares: SquareValue[]) {
+export function handlePlay(
+  nextSquares: SquareValue[],
+  history: SquareValue[][],
+  currentMove: number,
+  setHistory: (h: SquareValue[][]) => void,
+  setCurrentMove: (m: number) => void
+) {
   const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares]);
   setHistory(nextHistory);
   setCurrentMove(nextHistory.length - 1);

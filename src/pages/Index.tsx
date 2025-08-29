@@ -13,8 +13,16 @@ import {
 import { useEffect, useMemo } from "react";
 
 function Index() {
-  const { history, currentMove, gameMode, humanPlayer, setThinking } =
-    useGameStore();
+  const {
+    history,
+    currentMove,
+    gameMode,
+    humanPlayer,
+    isThinking,
+    setHistory,
+    setCurrentMove,
+    setThinking,
+  } = useGameStore();
 
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
@@ -25,11 +33,11 @@ function Index() {
   const winner = result?.winner ?? null;
   const turns = useMemo(() => calculateTurns(currentSquares), [currentSquares]);
   // const turns = calculateTurns(currentSquares);
-  // const status = calculateStatus(winner, turns, player);
-  const status = useMemo(
-    () => calculateStatus(winner, turns, player),
-    [winner, turns, player]
-  );
+  const status = calculateStatus(winner, turns, player, isThinking, gameMode);
+
+  const play = (nextSquares: typeof currentSquares) => {
+    handlePlay(nextSquares, history, currentMove, setHistory, setCurrentMove);
+  };
 
   useEffect(() => {
     const isAITurn =
@@ -53,7 +61,13 @@ function Index() {
           () => {
             const nextSquares = currentSquares.slice();
             nextSquares[move] = xIsNext ? "X" : "O";
-            handlePlay(nextSquares);
+            handlePlay(
+              nextSquares,
+              history,
+              currentMove,
+              setHistory,
+              setCurrentMove
+            );
             setThinking(false);
           },
           gameMode === "human-vs-ai" ? 700 : 500
@@ -82,7 +96,7 @@ function Index() {
             <Board
               xIsNext={xIsNext}
               squares={currentSquares}
-              onPlay={handlePlay}
+              onPlay={play}
             />
           </div>
         </main>
