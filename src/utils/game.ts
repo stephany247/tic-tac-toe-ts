@@ -1,7 +1,4 @@
-import {
-  type HumanPlayer,
-  type SquareValue,
-} from "@/store/store";
+import { type HumanPlayer, type SquareValue } from "@/store/store";
 // const { history, currentMove, gameMode, isThinking } = useGameStore();
 // const { setHistory, setCurrentMove } = useGameStore();
 
@@ -86,7 +83,9 @@ export function minimax(
   aiPlayer: SquareValue,
   humanPlayer: SquareValue
 ): number {
-  const winner = calculateWinner(squares);
+  //   const winner = calculateWinner(squares);
+  const result = calculateWinner(squares);
+  const winner = result?.winner ?? null;
 
   // Base cases
   if (winner === aiPlayer) return 10 - depth;
