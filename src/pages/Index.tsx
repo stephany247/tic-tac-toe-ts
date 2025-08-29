@@ -1,95 +1,66 @@
 import Board from "@/components/Board";
 import GameControls from "@/components/GameControls";
 import ThemeToggle from "@/components/ThemeToggle";
-import { useGameStore, type SquareValue } from "@/store";
-import { useEffect } from "react";
+import { useGameStore } from "@/store/store";
+import {
+  calculateStatus,
+  calculateTurns,
+  calculateWinner,
+  getAIMove,
+  getComputerMove,
+  handlePlay,
+} from "@/utils/game";
+import { useEffect, useMemo } from "react";
 
 function Index() {
-  const history = useGameStore((state) => state.history);
-  const setHistory = useGameStore((state) => state.setHistory);
+  const { history, currentMove, gameMode, humanPlayer, setThinking } =
+    useGameStore();
 
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
-  const currentMove = useGameStore((state) => state.currentMove);
   const xIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
 
-  const { gameMode, humanPlayer } = useGameStore();
-
   const player = xIsNext ? "X" : "O";
-  const winner = calculateWinner(currentSquares);
-  const turns = calculateTurns(currentSquares);
-  const status = calculateStatus(winner, turns, player);
-
-  function calculateWinner(squares: Array<"X" | "O" | null>) {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (
-        squares[a] &&
-        squares[a] === squares[b] &&
-        squares[a] === squares[c]
-      ) {
-        return squares[a];
-      }
-    }
-
-    return null;
-  }
-
-  function calculateTurns(squares: Array<"X" | "O" | null>) {
-    return squares.filter((square) => !square).length;
-  }
-
-  function calculateStatus(
-    winner: "X" | "O" | null,
-    turns: number,
-    player: "X" | "O"
-  ) {
-    if (!winner && !turns) return "It's a Draw!";
-    if (winner) return `Winner: ${winner}`;
-    return `Next player: ${player}`;
-  }
-
-  function handlePlay(nextSquares: SquareValue[]) {
-    const nextHistory = history.slice(0, currentMove + 1).concat([nextSquares]);
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
-  }
-
-  function getComputerMove(squares: SquareValue[]): number | null {
-    const emptySquares = squares
-      .map((val, idx) => (val === null ? idx : null))
-      .filter((idx) => idx !== null) as number[];
-    if (emptySquares.length === 0) return null;
-    return emptySquares[Math.floor(Math.random() * emptySquares.length)];
-  }
+  // const winner = calculateWinner(currentSquares);
+  const result = calculateWinner(currentSquares);
+  const winner = result?.winner ?? null;
+  const turns = useMemo(() => calculateTurns(currentSquares), [currentSquares]);
+  // const turns = calculateTurns(currentSquares);
+  // const status = calculateStatus(winner, turns, player);
+  const status = useMemo(
+    () => calculateStatus(winner, turns, player),
+    [winner, turns, player]
+  );
 
   useEffect(() => {
+    const isAITurn =
+      (xIsNext && humanPlayer !== "X") || (!xIsNext && humanPlayer !== "O");
     if (
-      gameMode === "human-vs-computer" &&
+      // gameMode === "human-vs-computer" &&
+      // !winner &&
+      // ((xIsNext && humanPlayer !== "X") || (!xIsNext && humanPlayer !== "O"))
+      (gameMode === "human-vs-computer" || gameMode === "human-vs-ai") &&
       !winner &&
-      ((xIsNext && humanPlayer !== "X") || (!xIsNext && humanPlayer !== "O"))
+      isAITurn
     ) {
-      const move = getComputerMove(currentSquares);
+      setThinking(true);
+      // const move = getComputerMove(currentSquares);
+      const move =
+        gameMode === "human-vs-ai"
+          ? getAIMove([...currentSquares], humanPlayer)
+          : getComputerMove(currentSquares);
       if (move !== null) {
-        setTimeout(() => {
-          const nextSquares = currentSquares.slice();
-          nextSquares[move] = xIsNext ? "X" : "O";
-          handlePlay(nextSquares);
-        }, 500); // slight delay for realism
+        setTimeout(
+          () => {
+            const nextSquares = currentSquares.slice();
+            nextSquares[move] = xIsNext ? "X" : "O";
+            handlePlay(nextSquares);
+            setThinking(false);
+          },
+          gameMode === "human-vs-ai" ? 700 : 500
+        ); // slight delay for realism
       }
     }
-  }, [gameMode, humanPlayer, xIsNext, currentSquares, winner]);
+  }, [gameMode, humanPlayer, xIsNext, currentSquares, winner, setThinking]);
 
   return (
     <div>

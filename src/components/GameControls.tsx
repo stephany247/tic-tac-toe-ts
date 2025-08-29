@@ -1,14 +1,10 @@
-import { useGameStore } from "@/store";
+import { useGameStore } from "@/store/store";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, History } from "lucide-react";
 import GameModeSelector from "./GameModeSelector";
 
 const GameControls = ({ status }: { status: string }) => {
-  const history = useGameStore((state) => state.history);
-  const resetGame = useGameStore((state) => state.resetGame);
-
-  const currentMove = useGameStore((state) => state.currentMove);
-  const setCurrentMove = useGameStore((state) => state.setCurrentMove);
+  const { history, currentMove, resetGame, setCurrentMove } = useGameStore();
 
   function jumpTo(nextMove: number) {
     setCurrentMove(nextMove);

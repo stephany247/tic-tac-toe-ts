@@ -13,6 +13,7 @@ interface GameState {
   currentMove: number;
   gameMode: GameMode;
   humanPlayer: HumanPlayer;
+  isThinking: boolean;
 }
 
 interface GameActions {
@@ -23,6 +24,7 @@ interface GameActions {
   resetGame: () => void;
   setGameMode: (mode: GameMode) => void;
   setHumanPlayer: (player: HumanPlayer) => void;
+  setThinking: (value: boolean) => void;
 }
 
 export const useGameStore = create(
@@ -32,6 +34,7 @@ export const useGameStore = create(
       currentMove: 0,
       gameMode: "human-vs-human",
       humanPlayer: "X", // default
+      isThinking: false,
     },
     (set) => {
       return {
@@ -55,9 +58,11 @@ export const useGameStore = create(
           set({
             history: [Array(9).fill(null)],
             currentMove: 0,
+            isThinking: false,
           }),
         setGameMode: (mode) => set({ gameMode: mode }),
         setHumanPlayer: (player) => set({ humanPlayer: player }),
+        setThinking: (value: boolean) => set({ isThinking: value }),
       };
     }
   )
